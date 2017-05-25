@@ -18,6 +18,9 @@ ADD . $HOME
 RUN chown -R node $HOME
 USER node
 
+# ARGs
+ARG NPMJS_TOKEN
+
 # Prepare and complete `npm install`
 ####################################
 RUN cd ~ && npm install --production;
