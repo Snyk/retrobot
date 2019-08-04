@@ -13,4 +13,26 @@ ignore:
     - slack > tiny-json-http:
         reason: Needs time invested to fix breaking changes
         expires: '2019-06-19T10:28:54.248Z'
-patch: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  SNYK-JS-LODASH-450202:
+    - snyk > lodash:
+        patched: '2019-08-04T15:22:36.402Z'
+    - snyk > snyk-config > lodash:
+        patched: '2019-08-04T15:22:36.402Z'
+    - snyk > snyk-php-plugin > lodash:
+        patched: '2019-08-04T15:22:36.402Z'
+    - snyk > @snyk/dep-graph > lodash:
+        patched: '2019-08-04T15:22:36.402Z'
+    - snyk > inquirer > lodash:
+        patched: '2019-08-04T15:22:36.402Z'
+    - snyk > snyk-nuget-plugin > lodash:
+        patched: '2019-08-04T15:22:36.402Z'
+    - snyk > snyk-nodejs-lockfile-parser > lodash:
+        patched: '2019-08-04T15:22:36.402Z'
+    - snyk > snyk-go-plugin > graphlib > lodash:
+        patched: '2019-08-04T15:22:36.402Z'
+    - snyk > snyk-nodejs-lockfile-parser > graphlib > lodash:
+        patched: '2019-08-04T15:22:36.402Z'
+    - snyk > @snyk/dep-graph > graphlib > lodash:
+        patched: '2019-08-04T15:22:36.402Z'

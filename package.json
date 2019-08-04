@@ -25,7 +25,7 @@
     "debug": "^2.2.0",
     "slack": "^11.0.0",
     "undefsafe": "^1.1.0",
-    "snyk": "^1.124.1"
+    "snyk": "^1.208.0"
   },
   "devDependencies": {
     "babel-cli": "^6.8.0",
