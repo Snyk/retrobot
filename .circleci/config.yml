@@ -1,0 +1,217 @@
+version: 2.1
+
+defaults: &defaults
+  resource_class: small
+  docker:
+    - image: gcr.io/snyk-main/nsolid-cicd:dubnium-3.6.0
+      auth:
+        username: _json_key
+        password: $GCLOUD_GCR_BUILDER
+  working_directory: ~/retrobot
+
+private_cicd_repo_auth: &private_cicd_repo_auth
+  auth:
+    username: _json_key
+    password: $GCLOUD_GCR_BUILDER
+commands:
+  install_deps:
+    description: Install dependencies
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-npm-cache-{{ checksum "package-lock.json" }}
+            - v1-npm-cache-
+      - run:
+          name: Use snyk-main npmjs user
+          command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
+      - run:
+          name: Install dependencies
+          command: npm ci
+      - save_cache:
+          key: v1-npm-cache-{{ checksum "package-lock.json" }}
+          paths:
+            - ~/.npm
+      - persist_to_workspace:
+          root: .
+          paths:
+            - node_modules/
+  gcr_auth:
+    description: Auth GCR
+    steps:
+      - setup_remote_docker
+      - run:
+          name: GCR auth
+          command: echo $GCLOUD_GCR_BUILDER | docker login -u _json_key --password-stdin https://gcr.io/snyk-main
+
+jobs:
+  install_dev:
+    <<: *defaults
+    environment:
+      NODE_ENV: development
+    steps:
+      - install_deps
+  install_prod:
+    <<: *defaults
+    steps:
+      - install_deps
+  lint:
+    <<: *defaults
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/retrobot
+      - run:
+          name: Run tests
+          command: npm run lint
+  test:
+    <<: *defaults
+    docker:
+      - image: circleci/node:10
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/retrobot
+      - run:
+          name: Run tests
+          command: npm test
+  publish_docker_image:
+    <<: *defaults
+    description: Build docker image and push to GCR
+    docker:
+      - image: gcr.io/snyk-main/deployer-cicd
+        <<: *private_cicd_repo_auth
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/retrobot
+      - run:
+          name: Add commit data to config
+          command: add_commit_data
+      - gcr_auth
+      - run:
+          name: Build
+          command: docker build -t gcr.io/snyk-main/retrobot:${CIRCLE_SHA1} .
+      - run:
+          name: Push
+          command: docker push gcr.io/snyk-main/retrobot:${CIRCLE_SHA1}
+  deploy_dev:
+    <<: *defaults
+    description: Tag dev release in GCR
+    docker:
+      - image: gcr.io/snyk-main/deployer-cicd
+        <<: *private_cicd_repo_auth
+    steps:
+      - checkout
+      - gcr_auth
+      - run:
+          command: docker_release_tag
+          environment:
+            DEPLOY_ENV: dev
+      - run:
+          name: Deploy to DEV
+          command: deploy
+          environment:
+            DEPLOY_ENV: dev
+  deploy_prod:
+    <<: *defaults
+    description: Deploy service to prod
+    docker:
+      - image: gcr.io/snyk-main/deployer-cicd
+        <<: *private_cicd_repo_auth
+    steps:
+      - checkout
+      - gcr_auth
+      - run:
+          command: docker_release_tag
+          environment:
+            DEPLOY_ENV: prod
+      - run:
+          name: Deploy to PROD
+          command: deploy
+          environment:
+            DEPLOY_ENV: prod
+  release:
+    <<: *defaults
+    steps:
+      - checkout
+      - run:
+          name: Release on GitHub
+          command: npx semantic-release
+
+workflows:
+  version: 2
+  test_and_release:
+    jobs:
+      - install_dev:
+          name: Install DEV
+          context: nodejs-install
+          filters:
+            branches:
+              ignore:
+                - master
+      - lint:
+          name: Lint
+          context: nodejs-install
+          requires:
+            - Install DEV
+          filters:
+            branches:
+              ignore:
+                - master
+      - test:
+          name: Test
+          context: nodejs-install
+          requires:
+            - Install DEV
+          filters:
+            branches:
+              ignore:
+                - master
+      - install_prod:
+          name: Install PROD
+          context: nodejs-install
+          requires:
+            - Test
+            - Lint
+          filters:
+            branches:
+              ignore:
+                - master
+      - publish_docker_image:
+          name: Publish image
+          context: snyk-docker-build
+          requires:
+            - Lint
+            - Install PROD
+          filters:
+            branches:
+              only:
+                - develop
+      - deploy_dev:
+          name: Deploy DEV
+          context: snyk-docker-build
+          requires:
+            - Publish image
+          filters:
+            branches:
+              only:
+                - develop
+      - deploy_prod:
+          name: Deploy PROD
+          context: snyk-docker-build
+          requires:
+            - Deploy DEV
+          filters:
+            branches:
+              only:
+                - master
+      - release:
+          name: Release to GitHub
+          context: nodejs-app-release
+          requires:
+            - Deploy PROD
+          filters:
+            branches:
+              only:
+                - master
