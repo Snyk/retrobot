@@ -200,8 +200,6 @@ workflows:
       - deploy_prod:
           name: Deploy PROD
           context: snyk-docker-build
-          requires:
-            - Deploy DEV
           filters:
             branches:
               only:
