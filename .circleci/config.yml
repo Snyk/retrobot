@@ -3,7 +3,7 @@ version: 2.1
 defaults: &defaults
   resource_class: small
   docker:
-    - image: gcr.io/snyk-main/nsolid-cicd:dubnium-3.6.0
+    - image: nodesource/nsolid:dubnium-latest
       auth:
         username: _json_key
         password: $GCLOUD_GCR_BUILDER
@@ -66,8 +66,6 @@ jobs:
           command: npm run lint
   test:
     <<: *defaults
-    docker:
-      - image: circleci/node:10
     steps:
       - checkout
       - attach_workspace:

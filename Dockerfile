@@ -1,4 +1,4 @@
-FROM nodesource/nsolid:dubnium-3.6.0
+FROM nodesource/nsolid:dubnium-latest
 
 MAINTAINER Snyk Ltd
 
