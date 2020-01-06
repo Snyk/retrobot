@@ -3,7 +3,7 @@ version: 2.1
 defaults: &defaults
   resource_class: small
   docker:
-    - image: nodesource/nsolid:dubnium-latest
+    - image: gcr.io/snyk-main/nsolid-ubuntu:dubnium
       auth:
         username: _json_key
         password: $GCLOUD_GCR_BUILDER

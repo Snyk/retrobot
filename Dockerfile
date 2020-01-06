@@ -1,14 +1,7 @@
-FROM nodesource/nsolid:dubnium-latest
+FROM gcr.io/snyk-main/nsolid-ubuntu:dubnium
 
-MAINTAINER Snyk Ltd
+USER snyk
 
-ENV HOME /home/node
-ENV NODE_ENV production
-RUN yes | adduser -h $HOME -D -S node
+ADD . .
 
-ADD . $HOME
-
-RUN chown -R node $HOME
-USER node
-
-CMD  cd ~ && npm start
+CMD ["node", "lib"]
