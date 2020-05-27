@@ -3,7 +3,7 @@ version: 2.1
 defaults: &defaults
   resource_class: small
   docker:
-    - image: gcr.io/snyk-main/nsolid-ubuntu:dubnium
+    - image: gcr.io/snyk-main/nsolid-ubuntu:erbium
       auth:
         username: _json_key
         password: $GCLOUD_GCR_BUILDER

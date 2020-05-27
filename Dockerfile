@@ -1,4 +1,4 @@
-FROM gcr.io/snyk-main/nsolid-ubuntu:dubnium
+FROM gcr.io/snyk-main/nsolid-ubuntu:erbium
 
 USER snyk
 
