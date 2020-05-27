@@ -21,7 +21,6 @@
   "author": "Remy Sharp",
   "license": "MIT",
   "dependencies": {
-    "clarify": "^1.0.5",
     "debug": "^4.1.1",
     "slack": "^8.4.2"
   },
