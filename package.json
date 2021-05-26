@@ -22,7 +22,7 @@
   "license": "MIT",
   "dependencies": {
     "debug": "^4.1.1",
-    "slack": "^8.4.2"
+    "slack": "^9.0.0"
   },
   "devDependencies": {},
   "description": "Slack bot for retrospectives",
